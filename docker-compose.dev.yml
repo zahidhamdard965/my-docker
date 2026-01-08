@@ -1,25 +1,24 @@
 services:
   db:
-  image: mysql:8.0
-  container_name: mysql-dev
-  restart: unless-stopped
-  environment:
-    MYSQL_ROOT_PASSWORD: mysecretpassword
-    MYSQL_DATABASE: mydatabase
-    MYSQL_USER: myuser
-    MYSQL_PASSWORD: mysecretpassword
-  ports:
-    - "3306:3306"
-  volumes:
-    - mysql-data:/var/lib/mysql
-  healthcheck:
-    test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pmysecretpassword"]
-    interval: 10s
-    timeout: 5s
-    retries: 10
-  networks:
-    - app-network
-
+    image: mysql:8.0
+    container_name: mysql-dev
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: mysecretpassword
+      MYSQL_DATABASE: mydatabase
+      MYSQL_USER: myuser
+      MYSQL_PASSWORD: mysecretpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-pmysecretpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
 
   backend:
     build: ./my-backend
