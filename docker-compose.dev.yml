@@ -1,0 +1,70 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: mysql-dev
+    restart: unless-stopped
+    env_file:
+      - ./my-backend/.env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  backend:
+    build: ./my-backend
+    container_name: backend-dev
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./my-backend:/app
+      - backend_node_modules:/app/node_modules
+    env_file:
+      - ./my-backend/.env
+    environment:
+      NODE_ENV: development
+      DB_HOST: db
+      DB_PORT: 3306
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  frontend:
+    build: ./my-frontend
+    container_name: frontend-dev
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./my-frontend:/app
+      - frontend_node_modules:/app/node_modules
+    environment:
+      NODE_ENV: development
+      VITE_API_URL: http://localhost:5000
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+  backend_node_modules:
+  frontend_node_modules:
