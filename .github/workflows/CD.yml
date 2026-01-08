@@ -21,11 +21,10 @@ jobs:
 
       - name: Deploy via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' <<'EOF'
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'sudo -i -u deployuser bash -s' <<'EOF'
             set -e
 
-            # مسیر و branch
-            DEPLOY_DIR=/home/${{ secrets.SSH_USER }}/my-docker
+            DEPLOY_DIR=/home/deployuser/my-docker
             BRANCH=main
             COMPOSE_FILE=$DEPLOY_DIR/docker-compose.dev.yml
 
@@ -43,38 +42,29 @@ jobs:
               sudo apt install -y docker-compose-plugin
             fi
 
-            # ایجاد کاربر یکبار
-            USERNAME=deployuser
-            if ! id -u $USERNAME &>/dev/null; then
-              sudo adduser --disabled-password --gecos "Deploy User,,," $USERNAME
-              sudo usermod -aG docker $USERNAME
-              sudo -u $USERNAME git config --global user.name "$USERNAME"
-              sudo -u $USERNAME git config --global user.email "$USERNAME@example.com"
-            fi
-
             echo "==> آماده سازی repo ..."
             if [ ! -d "$DEPLOY_DIR" ]; then
-              sudo -u $USERNAME git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/zahidhamdard965/my-docker.git $DEPLOY_DIR
+              git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/zahidhamdard965/my-docker.git $DEPLOY_DIR
             fi
             cd $DEPLOY_DIR
-            sudo -u $USERNAME git fetch origin $BRANCH
-            sudo -u $USERNAME git reset --hard origin/$BRANCH
+            git fetch origin $BRANCH
+            git reset --hard origin/$BRANCH
 
             echo "==> Pull آخرین images ..."
-            sudo -u $USERNAME DB_USER=${{ secrets.DB_USER }} \
-                            DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-                            DB_NAME=${{ secrets.DB_NAME }} \
-                            DB_HOST=db \
-                            DB_PORT=3306 \
-                            docker compose -f $COMPOSE_FILE pull
+            DB_USER=${{ secrets.DB_USER }} \
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            DB_NAME=${{ secrets.DB_NAME }} \
+            DB_HOST=db \
+            DB_PORT=3306 \
+            docker compose -f $COMPOSE_FILE pull
 
             echo "==> بالا آوردن سرویس‌ها ..."
-            sudo -u $USERNAME DB_USER=${{ secrets.DB_USER }} \
-                            DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-                            DB_NAME=${{ secrets.DB_NAME }} \
-                            DB_HOST=db \
-                            DB_PORT=3306 \
-                            docker compose -f $COMPOSE_FILE up -d
+            DB_USER=${{ secrets.DB_USER }} \
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+            DB_NAME=${{ secrets.DB_NAME }} \
+            DB_HOST=db \
+            DB_PORT=3306 \
+            docker compose -f $COMPOSE_FILE up -d
 
             echo "==> Deployment کامل شد ✅"
           EOF
