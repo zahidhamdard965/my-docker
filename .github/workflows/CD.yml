@@ -25,7 +25,7 @@ jobs:
             set -e
 
             DEPLOY_DIR=~/my-docker
-            BRANCH=dev
+            BRANCH=main
             COMPOSE_FILE=docker-compose.dev.yml
 
             echo "==> چک کردن Git ..."
@@ -60,8 +60,7 @@ jobs:
 
             echo "==> آماده سازی repo ..."
             if [ ! -d "$DEPLOY_DIR" ]; then
-             git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/zahidhamdard965/my-docker.git $DEPLOY_DIR
-
+              git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/zahidhamdard965/my-docker.git $DEPLOY_DIR
             fi
             cd $DEPLOY_DIR
             git fetch origin $BRANCH
