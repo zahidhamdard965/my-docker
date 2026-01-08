@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@v0.8.2
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
@@ -23,6 +23,10 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' <<'EOF'
             set -e
+
+            DEPLOY_DIR=~/my-docker
+            BRANCH=dev
+            COMPOSE_FILE=docker-compose.dev.yml
 
             echo "==> چک کردن Git ..."
             if ! command -v git &> /dev/null; then
@@ -49,17 +53,24 @@ jobs:
 
             echo "==> ایجاد کاربر جدید ..."
             USERNAME="devuser_$(date +%s)"
-            sudo adduser --disabled-password --gecos "Dev User,,," $USERNAME
+            sudo adduser --disabled-password --gecos "Dev User,,," $USERNAME || true
             sudo -u $USERNAME git config --global user.name "$USERNAME"
             sudo -u $USERNAME git config --global user.email "$USERNAME@example.com"
-            sudo usermod -aG docker $USERNAME
+            sudo usermod -aG docker $USERNAME || true
 
-            echo "==> Pull کردن آخرین images از GHCR ..."
-            cd ~/docker-compose
-            docker compose pull
+            echo "==> آماده سازی repo ..."
+            if [ ! -d "$DEPLOY_DIR" ]; then
+              git clone git@github.com:zahidhamdard965/my-docker.git $DEPLOY_DIR
+            fi
+            cd $DEPLOY_DIR
+            git fetch origin $BRANCH
+            git reset --hard origin/$BRANCH
+
+            echo "==> Pull آخرین images ..."
+            docker compose -f $COMPOSE_FILE pull
 
             echo "==> بالا آوردن سرویس‌ها ..."
-            docker compose up -d
+            docker compose -f $COMPOSE_FILE up -d
 
             echo "==> Deployment کامل شد ✅"
           EOF
