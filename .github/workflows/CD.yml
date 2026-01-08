@@ -66,9 +66,18 @@ jobs:
             git fetch origin $BRANCH
             git reset --hard origin/$BRANCH
 
-           sudo docker compose -f $COMPOSE_FILE pull
-           sudo docker compose -f $COMPOSE_FILE up -d
+            echo "==> تنظیم متغیرهای محیطی ..."
+            export DB_USER=${{ secrets.DB_USER }}
+            export DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            export DB_NAME=${{ secrets.DB_NAME }}
+            export DB_HOST=db
+            export DB_PORT=3306
 
+            echo "==> Pull آخرین images ..."
+            sudo docker compose -f $COMPOSE_FILE pull
+
+            echo "==> بالا آوردن سرویس‌ها ..."
+            sudo docker compose -f $COMPOSE_FILE up -d
 
             echo "==> Deployment کامل شد ✅"
           EOF
