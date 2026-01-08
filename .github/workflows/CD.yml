@@ -56,13 +56,16 @@ jobs:
             sudo mkdir -p $DEPLOY_DIR
             sudo chown -R $USERNAME:$USERNAME /home/$USERNAME
 
-            if [ ! -d "$DEPLOY_DIR/.git" ]; then
+            if [ -d "$DEPLOY_DIR/.git" ]; then
+              echo "Repo قبلاً وجود دارد → update می‌کنیم"
+              cd $DEPLOY_DIR
+              sudo -u $USERNAME git fetch origin $BRANCH
+              sudo -u $USERNAME git reset --hard origin/$BRANCH
+            else
+              echo "Repo موجود نیست → clone می‌کنیم"
               sudo -u $USERNAME git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/zahidhamdard965/my-docker.git $DEPLOY_DIR
+              cd $DEPLOY_DIR
             fi
-
-            cd $DEPLOY_DIR
-            sudo -u $USERNAME git fetch origin $BRANCH
-            sudo -u $USERNAME git reset --hard origin/$BRANCH
 
             echo "==> Pull آخرین images ..."
             sudo -u $USERNAME DB_USER=${{ secrets.DB_USER }} \
