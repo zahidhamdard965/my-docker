@@ -24,6 +24,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'bash -s' <<'EOF'
             set -e
 
+            # مسیر و تنظیمات
             DEPLOY_DIR=/home/deployuser/my-docker
             BRANCH=main
             COMPOSE_FILE=$DEPLOY_DIR/docker-compose.dev.yml
@@ -51,10 +52,14 @@ jobs:
               sudo -u $USERNAME git config --global user.email "$USERNAME@example.com"
             fi
 
-            echo "==> آماده سازی repo ..."
-            if [ ! -d "$DEPLOY_DIR" ]; then
+            echo "==> آماده سازی فولدر deployment و repo ..."
+            sudo mkdir -p $DEPLOY_DIR
+            sudo chown -R $USERNAME:$USERNAME /home/$USERNAME
+
+            if [ ! -d "$DEPLOY_DIR/.git" ]; then
               sudo -u $USERNAME git clone https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/zahidhamdard965/my-docker.git $DEPLOY_DIR
             fi
+
             cd $DEPLOY_DIR
             sudo -u $USERNAME git fetch origin $BRANCH
             sudo -u $USERNAME git reset --hard origin/$BRANCH
