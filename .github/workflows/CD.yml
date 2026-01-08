@@ -56,6 +56,13 @@ jobs:
             sudo mkdir -p $DEPLOY_DIR
             sudo chown -R $USERNAME:$USERNAME /home/$USERNAME
 
+            # اگر فولدر وجود دارد ولی git repo نیست → پاکش کن
+            if [ -d "$DEPLOY_DIR" ] && [ ! -d "$DEPLOY_DIR/.git" ]; then
+              echo "فولدر موجود است ولی git repo نیست → پاک می‌کنیم"
+              sudo rm -rf $DEPLOY_DIR
+            fi
+
+            # اگر git repo موجود است → update
             if [ -d "$DEPLOY_DIR/.git" ]; then
               echo "Repo قبلاً وجود دارد → update می‌کنیم"
               cd $DEPLOY_DIR
