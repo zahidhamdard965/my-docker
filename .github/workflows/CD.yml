@@ -66,11 +66,9 @@ jobs:
             git fetch origin $BRANCH
             git reset --hard origin/$BRANCH
 
-            echo "==> Pull آخرین images ..."
-            docker compose -f $COMPOSE_FILE pull
+           sudo docker compose -f $COMPOSE_FILE pull
+           sudo docker compose -f $COMPOSE_FILE up -d
 
-            echo "==> بالا آوردن سرویس‌ها ..."
-            docker compose -f $COMPOSE_FILE up -d
 
             echo "==> Deployment کامل شد ✅"
           EOF
